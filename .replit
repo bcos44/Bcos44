@@ -37,3 +37,8 @@ externalPort = 80
 [[ports]]
 localPort = 40621
 externalPort = 3000
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd crypto_miner && flutter run -d web-server --web-port=5000 --web-hostname=0.0.0.0 --release"]
+build = ["bash", "-c", "cd crypto_miner && flutter build web --release"]
