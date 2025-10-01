@@ -11,6 +11,7 @@ A Flutter-based cryptocurrency mining simulator web application with Google AdMo
 - **Framework:** Flutter 3.32.0
 - **Language:** Dart 3.8.0
 - **Platform:** Web (built for web-server device)
+- **Authentication:** Firebase Auth with Google Sign-In
 - **State Management:** Provider package
 - **Persistence:** SharedPreferences
 - **Ads:** Google Mobile Ads (AdMob) - Web display only, full functionality on Android/iOS
@@ -19,16 +20,20 @@ A Flutter-based cryptocurrency mining simulator web application with Google AdMo
 ```
 crypto_miner/
 ├── lib/
-│   ├── main.dart          # App entry point, state management, theme handling
+│   ├── main.dart          # App entry point, state management, Firebase init
+│   ├── login_screen.dart  # Google Sign-In authentication screen
+│   ├── auth_service.dart  # Firebase authentication service
 │   ├── home.dart          # Home screen with mining simulation and AdMob
 │   └── settings.dart      # Settings screen with theme toggle
 ├── web/                   # Web-specific assets and HTML
 ├── android/               # Android platform configuration
 ├── ios/                   # iOS platform configuration
+├── FIREBASE_SETUP.md      # Firebase configuration guide
 └── pubspec.yaml           # Flutter dependencies
 ```
 
 ### Key Features
+- **Google Sign-In Authentication** (requires Firebase setup)
 - Start/Stop mining simulation with dynamic hash rates (20-120 H/s)
 - Real-time coin accumulation
 - Dark/Light theme toggle (default: dark mode)
@@ -36,6 +41,7 @@ crypto_miner/
 - Banner ads on home screen
 - Settings persistence using SharedPreferences
 - Ads watched counter
+- User authentication state management
 
 ## Development Setup
 
@@ -76,6 +82,15 @@ flutter build web --release
 **Note:** The web version displays ad placeholders but does not load actual AdMob ads. Full AdMob functionality requires Android or iOS builds.
 
 ## Recent Changes
+- **2025-10-01 (Later):** Added Google Sign-In Authentication
+  - Integrated Firebase Authentication and Google Sign-In
+  - Created `login_screen.dart` with Google Sign-In button
+  - Created `auth_service.dart` for authentication logic
+  - Updated `main.dart` with Firebase initialization and auth state management
+  - Added protective guards to prevent crashes when Firebase is not configured
+  - Created `FIREBASE_SETUP.md` guide for Firebase configuration
+  - **Status:** Code complete, requires Firebase project setup to function
+
 - **2025-10-01:** Initial import and Replit configuration
   - Installed Flutter 3.32.0 with Dart 3.8.0
   - Enabled Flutter web support
@@ -86,6 +101,9 @@ flutter build web --release
 
 ## Dependencies
 - `flutter`: SDK
+- `firebase_core`: ^3.8.1 - Firebase core functionality
+- `firebase_auth`: ^5.3.3 - Firebase authentication
+- `google_sign_in`: ^6.2.2 - Google Sign-In integration
 - `google_mobile_ads`: ^5.2.0 - AdMob integration
 - `provider`: ^6.1.2 - State management
 - `shared_preferences`: ^2.3.3 - Data persistence
