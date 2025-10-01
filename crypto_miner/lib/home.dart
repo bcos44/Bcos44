@@ -25,6 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
   RewardedAd? _rewardedAd;
   bool _isBannerAdLoaded = false;
   bool _isRewardedAdLoaded = false;
+  int _rewardedAdRetryAttempt = 0;
 
   @override
   void initState() {
@@ -69,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
           _rewardedAd = ad;
+          _rewardedAdRetryAttempt = 0;
           setState(() {
             _isRewardedAdLoaded = true;
           });
@@ -76,6 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
         onAdFailedToLoad: (error) {
           setState(() {
             _isRewardedAdLoaded = false;
+          });
+          _rewardedAdRetryAttempt++;
+          final retryDelay = Duration(seconds: min(_rewardedAdRetryAttempt * 2, 30));
+          Timer(retryDelay, () {
+            if (mounted && !kIsWeb) {
+              _loadRewardedAd();
+            }
           });
         },
       ),
@@ -125,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Rewards claimed! (AdMob only works on mobile apps)')),
+        const SnackBar(content: Text('Rewards claimed! (AdMob only works on Android/iOS)')),
       );
       return;
     }
@@ -188,10 +197,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
+      body: Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -242,39 +248,44 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _minedCoins > 0 ? _claimRewards : null,
+                      onPressed: _minedCoins > 0 && (kIsWeb || _isRewardedAdLoaded) ? _claimRewards : null,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
                       ),
-                      child: const Text(
-                        'Claim Rewards',
-                        style: TextStyle(fontSize: 18),
+                      child: Text(
+                        !kIsWeb && !_isRewardedAdLoaded ? 'Loading Ad...' : 'Claim Rewards',
+                        style: const TextStyle(fontSize: 18),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-          if (!kIsWeb && _isBannerAdLoaded && _bannerAd != null)
-            SizedBox(
+      bottomNavigationBar: !kIsWeb && _isBannerAdLoaded && _bannerAd != null
+          ? SizedBox(
               height: _bannerAd!.size.height.toDouble(),
-              width: _bannerAd!.size.width.toDouble(),
               child: AdWidget(ad: _bannerAd!),
             )
-          else if (kIsWeb)
-            Container(
-              height: 50,
-              color: Colors.grey.withOpacity(0.2),
-              child: const Center(
-                child: Text(
-                  'Banner Ad (AdMob only works on mobile apps)',
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
-            ),
-        ],
-      ),
+          : kIsWeb
+              ? Container(
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Banner Ad (Visible on Android/iOS apps only)',
+                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                )
+              : null,
     );
   }
 }
